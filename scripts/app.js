@@ -75,6 +75,7 @@ async function copyTextToClipboard(text) {
 }
 
 function initQuoteGenerator() {
+  const themeToggleBtnEl = document.querySelector("#themeToggleBtn");
   const inputEl = document.querySelector("#keywordInput");
   const nextQuoteBtnEl = document.querySelector("#nextQuoteBtn");
   const copyQuoteBtnEl = document.querySelector("#copyQuoteBtn");
@@ -91,6 +92,7 @@ function initQuoteGenerator() {
   const uiMessageEl = document.querySelector("#uiMessage");
 
   if (
+    !themeToggleBtnEl ||
     !inputEl ||
     !nextQuoteBtnEl ||
     !copyQuoteBtnEl ||
@@ -108,6 +110,23 @@ function initQuoteGenerator() {
   ) {
     return;
   }
+
+  const THEME_KEY = "quote-theme";
+  const getInitialTheme = () => {
+    const storedTheme = localStorage.getItem(THEME_KEY);
+    if (storedTheme === "dark" || storedTheme === "light") {
+      return storedTheme;
+    }
+    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  };
+
+  const applyTheme = (theme) => {
+    document.body.setAttribute("data-theme", theme);
+    themeToggleBtnEl.textContent = theme === "dark" ? "라이트 테마" : "다크 테마";
+  };
+
+  let currentTheme = getInitialTheme();
+  applyTheme(currentTheme);
 
   let messageTimer = null;
 
@@ -221,6 +240,12 @@ function initQuoteGenerator() {
     quoteCharCountEl.textContent = `${customQuoteTextEl.value.length} / 300`;
   };
 
+  const onToggleTheme = () => {
+    currentTheme = currentTheme === "dark" ? "light" : "dark";
+    applyTheme(currentTheme);
+    localStorage.setItem(THEME_KEY, currentTheme);
+  };
+
   const onAddCustomQuote = () => {
     const text = customQuoteTextEl.value.trim();
     const author = customQuoteAuthorEl.value.trim();
@@ -249,6 +274,7 @@ function initQuoteGenerator() {
   nextQuoteBtnEl.addEventListener("click", onGenerate);
   copyQuoteBtnEl.addEventListener("click", onCopy);
   shareQuoteBtnEl.addEventListener("click", onShare);
+  themeToggleBtnEl.addEventListener("click", onToggleTheme);
   shareEmailBtnEl.addEventListener("click", onShareByEmail);
   shareSnsBtnEl.addEventListener("click", onShareBySns);
   shareUrlBtnEl.addEventListener("click", onCopyShareUrl);

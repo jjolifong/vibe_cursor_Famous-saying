@@ -8,7 +8,22 @@
   --primary-hover: #4338ca;
   --border: #d1d5db;
   --focus: #a5b4fc;
+  --quote-bg: #fafafa;
   --shadow: 0 10px 25px rgba(31, 41, 55, 0.12);
+}
+
+[data-theme="dark"] {
+  --bg-start: #0f172a;
+  --bg-end: #111827;
+  --card-bg: #1f2937;
+  --text-main: #e5e7eb;
+  --text-sub: #9ca3af;
+  --primary: #6366f1;
+  --primary-hover: #4f46e5;
+  --border: #374151;
+  --focus: #818cf8;
+  --quote-bg: #111827;
+  --shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
 }
 
 * {
@@ -34,6 +49,14 @@ body {
 .page-header h1 {
   margin: 0 0 0.4rem;
   font-size: 1.8rem;
+}
+
+.header-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.7rem;
+  flex-wrap: wrap;
 }
 
 .page-header p {
@@ -76,6 +99,7 @@ body {
 #keywordInput:focus-visible,
 #customQuoteText:focus-visible,
 #customQuoteAuthor:focus-visible,
+#themeToggleBtn:focus-visible,
 #nextQuoteBtn:focus-visible,
 #copyQuoteBtn:focus-visible,
 #shareQuoteBtn:focus-visible,
@@ -100,6 +124,7 @@ body {
   display: grid;
 }
 
+#themeToggleBtn,
 #nextQuoteBtn,
 #copyQuoteBtn,
 #shareQuoteBtn,
@@ -119,6 +144,7 @@ body {
   transition: background-color 0.2s ease, transform 0.15s ease;
 }
 
+#themeToggleBtn:hover,
 #nextQuoteBtn:hover,
 #copyQuoteBtn:hover,
 #shareQuoteBtn:hover,
@@ -130,6 +156,7 @@ body {
   transform: translateY(-1px);
 }
 
+#themeToggleBtn:active,
 #nextQuoteBtn:active,
 #copyQuoteBtn:active,
 #shareQuoteBtn:active,
@@ -141,19 +168,19 @@ body {
 }
 
 .quote-output {
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border);
   border-radius: 10px;
   min-height: 90px;
   padding: 0.95rem;
   line-height: 1.5;
-  background: #fafafa;
+  background: var(--quote-bg);
   color: var(--text-main);
   white-space: pre-line;
 }
 
 .custom-quote-section {
   margin-top: 0.2rem;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--border);
   padding-top: 0.9rem;
   display: grid;
   gap: 0.6rem;

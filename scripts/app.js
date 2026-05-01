@@ -1,16 +1,19 @@
 const quoteData = [
-  { text: "작은 습관이 큰 변화를 만든다.", author: "제임스 클리어" },
-  { text: "시작이 반이다. 오늘 한 걸음을 떼어라.", author: "아리스토텔레스" },
-  { text: "꾸준함은 재능을 이긴다.", author: "존 맥스웰" },
-  { text: "두려움 너머에 성장이 있다.", author: "수전 제퍼스" },
-  { text: "실패는 끝이 아니라 다음 시도의 근거다.", author: "토머스 에디슨" },
+  { text: "작은 습관이 큰 변화를 만든다.", author: "제임스 클리어", authorEn: "James Clear" },
+  { text: "시작이 반이다. 오늘 한 걸음을 떼어라.", author: "아리스토텔레스", authorEn: "Aristotle" },
+  { text: "꾸준함은 재능을 이긴다.", author: "존 맥스웰", authorEn: "John C. Maxwell" },
+  { text: "두려움 너머에 성장이 있다.", author: "수전 제퍼스", authorEn: "Susan Jeffers" },
+  { text: "실패는 끝이 아니라 다음 시도의 근거다.", author: "토머스 에디슨", authorEn: "Thomas Edison" },
 ];
+
+const SAVED_QUOTES_KEY = "famous-saying-saved-quotes";
 
 function getRandomQuote(quotes) {
   if (!Array.isArray(quotes) || quotes.length === 0) {
     return {
       text: "명언 데이터를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.",
       author: "시스템",
+      authorEn: "System",
     };
   }
 
@@ -28,6 +31,7 @@ function buildCustomQuote(keyword) {
   return {
     text: templates[Math.floor(Math.random() * templates.length)],
     author: "키워드 생성",
+    authorEn: "",
   };
 }
 
@@ -74,39 +78,77 @@ async function copyTextToClipboard(text) {
   return true;
 }
 
+function loadSavedQuotes() {
+  try {
+    const raw = localStorage.getItem(SAVED_QUOTES_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function persistSavedQuotes(items) {
+  localStorage.setItem(SAVED_QUOTES_KEY, JSON.stringify(items));
+}
+
+function quoteToSerializable(quote) {
+  return {
+    text: quote.text,
+    author: quote.author,
+    authorEn: quote.authorEn != null ? quote.authorEn : "",
+  };
+}
+
+function getSummaryUrl(authorEn) {
+  const title = encodeURIComponent(authorEn.trim().replace(/\s+/g, "_"));
+  return `https://en.wikipedia.org/api/rest_v1/page/summary/${title}`;
+}
+
+async function fetchAuthorThumbnailUrl(authorEn) {
+  const key = typeof authorEn === "string" ? authorEn.trim() : "";
+  if (!key) return null;
+
+  const res = await fetch(getSummaryUrl(key), { headers: { Accept: "application/json" } });
+  if (!res.ok) return null;
+
+  const data = await res.json();
+  const src = data?.thumbnail?.source;
+  return typeof src === "string" && src.length > 0 ? src : null;
+}
+
 function initQuoteGenerator() {
   const themeToggleBtnEl = document.querySelector("#themeToggleBtn");
   const inputEl = document.querySelector("#keywordInput");
   const nextQuoteBtnEl = document.querySelector("#nextQuoteBtn");
-  const copyQuoteBtnEl = document.querySelector("#copyQuoteBtn");
+  const saveQuoteBtnEl = document.querySelector("#saveQuoteBtn");
   const shareQuoteBtnEl = document.querySelector("#shareQuoteBtn");
   const shareOptionsEl = document.querySelector("#shareOptions");
   const shareEmailBtnEl = document.querySelector("#shareEmailBtn");
   const shareSnsBtnEl = document.querySelector("#shareSnsBtn");
   const shareUrlBtnEl = document.querySelector("#shareUrlBtn");
   const outputEl = document.querySelector("#quoteOutput");
-  const customQuoteTextEl = document.querySelector("#customQuoteText");
-  const customQuoteAuthorEl = document.querySelector("#customQuoteAuthor");
-  const addCustomQuoteBtnEl = document.querySelector("#addCustomQuoteBtn");
-  const quoteCharCountEl = document.querySelector("#quoteCharCount");
   const uiMessageEl = document.querySelector("#uiMessage");
+  const authorPortraitWrapEl = document.querySelector("#authorPortraitWrap");
+  const authorPortraitImgEl = document.querySelector("#authorPortraitImg");
+  const savedQuotesListEl = document.querySelector("#savedQuotesList");
 
   if (
     !themeToggleBtnEl ||
     !inputEl ||
     !nextQuoteBtnEl ||
-    !copyQuoteBtnEl ||
+    !saveQuoteBtnEl ||
     !shareQuoteBtnEl ||
     !shareOptionsEl ||
     !shareEmailBtnEl ||
     !shareSnsBtnEl ||
     !shareUrlBtnEl ||
     !outputEl ||
-    !customQuoteTextEl ||
-    !customQuoteAuthorEl ||
-    !addCustomQuoteBtnEl ||
-    !quoteCharCountEl ||
-    !uiMessageEl
+    !uiMessageEl ||
+    !authorPortraitWrapEl ||
+    !authorPortraitImgEl ||
+    !savedQuotesListEl
   ) {
     return;
   }
@@ -129,6 +171,7 @@ function initQuoteGenerator() {
   applyTheme(currentTheme);
 
   let messageTimer = null;
+  let portraitRequestId = 0;
 
   const showMessage = (text, type = "success") => {
     if (messageTimer) {
@@ -146,22 +189,113 @@ function initQuoteGenerator() {
     }, 2400);
   };
 
+  const setPortraitVisible = (visible) => {
+    authorPortraitWrapEl.hidden = !visible;
+    if (!visible) {
+      authorPortraitImgEl.removeAttribute("src");
+      authorPortraitImgEl.alt = "";
+    }
+  };
+
+  const updateAuthorPortrait = async (quote) => {
+    const reqId = ++portraitRequestId;
+    setPortraitVisible(false);
+
+    const authorEn = quote?.authorEn;
+    if (!authorEn || typeof authorEn !== "string" || !authorEn.trim()) {
+      return;
+    }
+
+    try {
+      const url = await fetchAuthorThumbnailUrl(authorEn);
+      if (reqId !== portraitRequestId) return;
+      if (!url) {
+        setPortraitVisible(false);
+        return;
+      }
+      authorPortraitImgEl.alt = `${quote.author} 사진`;
+      authorPortraitImgEl.onload = () => {
+        if (reqId !== portraitRequestId) return;
+        setPortraitVisible(true);
+      };
+      authorPortraitImgEl.onerror = () => {
+        if (reqId !== portraitRequestId) return;
+        setPortraitVisible(false);
+      };
+      authorPortraitImgEl.src = url;
+      if (authorPortraitImgEl.complete && authorPortraitImgEl.naturalWidth > 0) {
+        if (reqId === portraitRequestId) setPortraitVisible(true);
+      }
+    } catch {
+      if (reqId !== portraitRequestId) return;
+      setPortraitVisible(false);
+    }
+  };
+
+  const renderSavedList = () => {
+    const items = loadSavedQuotes();
+    savedQuotesListEl.innerHTML = "";
+
+    if (items.length === 0) {
+      const empty = document.createElement("li");
+      empty.className = "saved-quotes-empty";
+      empty.textContent = "저장된 명언이 없습니다.";
+      savedQuotesListEl.appendChild(empty);
+      return;
+    }
+
+    items.forEach((item, index) => {
+      const li = document.createElement("li");
+      li.className = "saved-quote-item";
+
+      const body = document.createElement("div");
+      body.className = "saved-quote-body";
+      const textEl = document.createElement("p");
+      textEl.className = "saved-quote-text";
+      textEl.textContent = item.text;
+      const metaEl = document.createElement("p");
+      metaEl.className = "saved-quote-meta";
+      metaEl.textContent = `— ${item.author}`;
+      body.appendChild(textEl);
+      body.appendChild(metaEl);
+
+      const delBtn = document.createElement("button");
+      delBtn.type = "button";
+      delBtn.className = "saved-quote-delete";
+      delBtn.setAttribute("aria-label", "이 명언 삭제");
+      delBtn.textContent = "삭제";
+
+      delBtn.addEventListener("click", () => {
+        const next = loadSavedQuotes().filter((_, i) => i !== index);
+        persistSavedQuotes(next);
+        renderSavedList();
+        showMessage("목록에서 삭제했습니다.");
+      });
+
+      li.appendChild(body);
+      li.appendChild(delBtn);
+      savedQuotesListEl.appendChild(li);
+    });
+  };
+
   let currentQuote = getRandomQuote(quoteData);
   renderQuote(currentQuote, outputEl);
+  void updateAuthorPortrait(currentQuote);
+  renderSavedList();
 
   const onGenerate = () => {
     const quote = createQuote(inputEl.value);
     currentQuote = quote;
     renderQuote(quote, outputEl);
+    void updateAuthorPortrait(quote);
   };
 
-  const onCopy = async () => {
-    try {
-      await copyTextToClipboard(formatQuoteText(currentQuote));
-      showMessage("명언이 클립보드에 복사되었습니다.");
-    } catch (error) {
-      showMessage("복사에 실패했습니다. 다시 시도해주세요.", "error");
-    }
+  const onSave = () => {
+    const items = loadSavedQuotes();
+    items.push(quoteToSerializable(currentQuote));
+    persistSavedQuotes(items);
+    renderSavedList();
+    showMessage("명언을 저장했습니다.");
   };
 
   const onShare = async () => {
@@ -236,50 +370,19 @@ function initQuoteGenerator() {
     }
   };
 
-  const onCustomQuoteInput = () => {
-    quoteCharCountEl.textContent = `${customQuoteTextEl.value.length} / 300`;
-  };
-
   const onToggleTheme = () => {
     currentTheme = currentTheme === "dark" ? "light" : "dark";
     applyTheme(currentTheme);
     localStorage.setItem(THEME_KEY, currentTheme);
   };
 
-  const onAddCustomQuote = () => {
-    const text = customQuoteTextEl.value.trim();
-    const author = customQuoteAuthorEl.value.trim();
-
-    if (text.length === 0) {
-      showMessage("명언 내용을 입력해주세요.", "error");
-      return;
-    }
-
-    if (author.length === 0) {
-      showMessage("저자명을 입력해주세요.", "error");
-      return;
-    }
-
-    const newQuote = { text, author };
-    quoteData.push(newQuote);
-    currentQuote = newQuote;
-    renderQuote(newQuote, outputEl);
-
-    customQuoteTextEl.value = "";
-    customQuoteAuthorEl.value = "";
-    onCustomQuoteInput();
-    showMessage("나만의 명언이 추가되었습니다.");
-  };
-
   nextQuoteBtnEl.addEventListener("click", onGenerate);
-  copyQuoteBtnEl.addEventListener("click", onCopy);
+  saveQuoteBtnEl.addEventListener("click", onSave);
   shareQuoteBtnEl.addEventListener("click", onShare);
   themeToggleBtnEl.addEventListener("click", onToggleTheme);
   shareEmailBtnEl.addEventListener("click", onShareByEmail);
   shareSnsBtnEl.addEventListener("click", onShareBySns);
   shareUrlBtnEl.addEventListener("click", onCopyShareUrl);
-  addCustomQuoteBtnEl.addEventListener("click", onAddCustomQuote);
-  customQuoteTextEl.addEventListener("input", onCustomQuoteInput);
   inputEl.addEventListener("keydown", (event) => {
     if (event.key === "Enter") {
       onGenerate();

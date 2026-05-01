@@ -36,6 +36,25 @@ body {
   font-weight: 700;
 }
 
+.author-portrait-wrap {
+  display: flex;
+  justify-content: center;
+  margin: 0;
+}
+
+.author-portrait-wrap[hidden] {
+  display: none !important;
+}
+
+.author-portrait {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #e8eaed;
+  box-shadow: 0 2px 8px rgba(60, 64, 67, 0.12);
+}
+
 .button-row {
   display: grid;
   grid-template-columns: 2fr 1fr 1fr;
@@ -53,12 +72,11 @@ body {
 }
 
 #nextQuoteBtn,
-#copyQuoteBtn,
+#saveQuoteBtn,
 #shareQuoteBtn,
 #shareEmailBtn,
 #shareSnsBtn,
-#shareUrlBtn,
-#addCustomQuoteBtn {
+#shareUrlBtn {
   border: none;
   border-radius: 10px;
   background: #e0e0e0;
@@ -77,12 +95,11 @@ body {
 }
 
 #nextQuoteBtn:hover,
-#copyQuoteBtn:hover,
+#saveQuoteBtn:hover,
 #shareQuoteBtn:hover,
 #shareEmailBtn:hover,
 #shareSnsBtn:hover,
-#shareUrlBtn:hover,
-#addCustomQuoteBtn:hover {
+#shareUrlBtn:hover {
   filter: brightness(0.96);
 }
 
@@ -112,51 +129,83 @@ body {
   content: "\"";
 }
 
-.custom-quote-card {
+.saved-quotes-block {
+  margin-top: 4px;
+  padding-top: 18px;
+  border-top: 1px solid #e8eaed;
   display: grid;
-  gap: 14px;
+  gap: 12px;
 }
 
-.section-title {
+.saved-quotes-heading {
   margin: 0;
-  font-size: 1.12rem;
+  font-size: 1.05rem;
   font-weight: 700;
+  color: #3c4043;
 }
 
-.field-group {
+.saved-quotes-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
   display: grid;
-  gap: 8px;
+  gap: 10px;
 }
 
-.input-label {
+.saved-quotes-empty {
+  margin: 0;
+  padding: 12px 14px;
+  font-size: 0.92rem;
+  color: #5f6368;
+  background: #f8f9fa;
+  border-radius: 10px;
+}
+
+.saved-quote-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  background: #f8f9fa;
+  border-radius: 10px;
+}
+
+.saved-quote-body {
+  min-width: 0;
+  flex: 1;
+}
+
+.saved-quote-text {
+  margin: 0 0 6px;
   font-size: 0.95rem;
   font-weight: 600;
+  line-height: 1.45;
+  color: #202124;
 }
 
-.required-mark {
-  color: #d93025;
-}
-
-#customQuoteText,
-#customQuoteAuthor {
-  width: 100%;
-  border: none;
-  border-radius: 10px;
-  background: #f1f3f4;
-  padding: 12px 14px;
-  font-size: 1rem;
-  font-family: inherit;
-}
-
-#customQuoteText {
-  resize: vertical;
-  min-height: 118px;
-}
-
-.char-counter {
+.saved-quote-meta {
   margin: 0;
-  font-size: 0.82rem;
+  font-size: 0.85rem;
   color: #5f6368;
+}
+
+.saved-quote-delete {
+  flex-shrink: 0;
+  border: none;
+  border-radius: 8px;
+  background: #fce8e6;
+  color: #b3261e;
+  min-height: 36px;
+  padding: 8px 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter 0.18s ease;
+}
+
+.saved-quote-delete:hover {
+  filter: brightness(0.96);
 }
 
 .ui-message {
@@ -217,5 +266,14 @@ body {
 
   .button-row {
     grid-template-columns: 2fr 1fr 1fr;
+  }
+
+  .saved-quote-item {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .saved-quote-delete {
+    align-self: flex-end;
   }
 }

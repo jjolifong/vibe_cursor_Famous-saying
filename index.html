@@ -11,6 +11,10 @@
       <section class="card quote-card" aria-labelledby="quote-generator-title">
         <h1 id="quote-generator-title" class="title">오늘의 명언</h1>
 
+        <div id="authorPortraitWrap" class="author-portrait-wrap" hidden>
+          <img id="authorPortraitImg" class="author-portrait" src="" alt="" width="96" height="96" />
+        </div>
+
         <div id="quoteOutput" class="quote-output" aria-live="polite">
           버튼을 눌러 명언을 생성해보세요.
         </div>
@@ -19,7 +23,7 @@
 
         <div class="button-row" role="group" aria-label="명언 동작 버튼">
           <button id="nextQuoteBtn" type="button"><span aria-hidden="true">🔄</span> 다음 명언</button>
-          <button id="copyQuoteBtn" type="button"><span aria-hidden="true">📋</span> 복사</button>
+          <button id="saveQuoteBtn" type="button"><span aria-hidden="true">💾</span> 저장</button>
           <button id="shareQuoteBtn" type="button"><span aria-hidden="true">🔗</span> 공유</button>
         </div>
 
@@ -28,34 +32,11 @@
           <button id="shareSnsBtn" type="button">SNS</button>
           <button id="shareUrlBtn" type="button">URL 복사</button>
         </div>
-      </section>
 
-      <section class="card custom-quote-card" aria-labelledby="custom-quote-title">
-        <h2 id="custom-quote-title" class="section-title">나만의 명언 추가하기</h2>
-        <div class="field-group">
-          <label for="customQuoteText" class="input-label">명언 <span class="required-mark" aria-hidden="true">*</span></label>
-          <textarea
-            id="customQuoteText"
-            maxlength="300"
-            rows="4"
-            placeholder="영감을 주는 명언을 입력하세요"
-          ></textarea>
-          <p id="quoteCharCount" class="char-counter">최대 300자</p>
+        <div class="saved-quotes-block" aria-labelledby="saved-quotes-title">
+          <h2 id="saved-quotes-title" class="saved-quotes-heading">저장된 명언 목록</h2>
+          <ul id="savedQuotesList" class="saved-quotes-list"></ul>
         </div>
-
-        <div class="field-group">
-          <label for="customQuoteAuthor" class="input-label">저자명 <span class="required-mark" aria-hidden="true">*</span></label>
-          <input
-            id="customQuoteAuthor"
-            type="text"
-            maxlength="100"
-            placeholder="저자명을 입력하세요"
-            autocomplete="off"
-          />
-          <p class="char-counter">최대 100자</p>
-        </div>
-
-        <button id="addCustomQuoteBtn" type="button">추가</button>
       </section>
 
       <input id="keywordInput" type="text" class="hidden-input" autocomplete="off" />

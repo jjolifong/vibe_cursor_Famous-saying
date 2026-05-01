@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>명언 생성기</title>
+    <link rel="stylesheet" href="styles/main.css" />
+  </head>
+  <body>
+    <header class="page-header">
+      <h1>오늘의 명언 생성기</h1>
+      <p>키워드를 입력하면 맞춤형 명언도 만들 수 있어요.</p>
+    </header>
+
+    <main class="container">
+      <section class="quote-generator-card" aria-labelledby="quote-generator-title">
+        <h2 id="quote-generator-title" class="sr-only">명언 생성 영역</h2>
+
+        <label for="keywordInput" class="input-label">키워드 입력</label>
+        <input
+          id="keywordInput"
+          type="text"
+          placeholder="예: 도전, 성장, 자신감"
+          autocomplete="off"
+        />
+
+        <div class="button-row" role="group" aria-label="명언 동작 버튼">
+          <button id="nextQuoteBtn" type="button">다음 명언</button>
+          <button id="copyQuoteBtn" type="button">복사</button>
+          <button id="shareQuoteBtn" type="button">공유</button>
+        </div>
+
+        <div id="shareOptions" class="share-options" role="group" aria-label="공유 옵션">
+          <button id="shareEmailBtn" type="button">이메일</button>
+          <button id="shareSnsBtn" type="button">SNS</button>
+          <button id="shareUrlBtn" type="button">URL 복사</button>
+        </div>
+
+        <p id="uiMessage" class="ui-message" aria-live="polite"></p>
+
+        <div id="quoteOutput" class="quote-output" aria-live="polite">
+          버튼을 눌러 명언을 생성해보세요.
+        </div>
+
+        <section class="custom-quote-section" aria-labelledby="custom-quote-title">
+          <h3 id="custom-quote-title">나만의 명언 추가하기</h3>
+
+          <label for="customQuoteText" class="input-label">명언</label>
+          <textarea
+            id="customQuoteText"
+            maxlength="300"
+            rows="4"
+            placeholder="최대 300자까지 입력할 수 있어요."
+          ></textarea>
+          <p id="quoteCharCount" class="char-counter">0 / 300</p>
+
+          <label for="customQuoteAuthor" class="input-label">저자명</label>
+          <input
+            id="customQuoteAuthor"
+            type="text"
+            maxlength="100"
+            placeholder="예: 홍길동"
+            autocomplete="off"
+          />
+
+          <button id="addCustomQuoteBtn" type="button">추가</button>
+        </section>
+      </section>
+    </main>
+
+    <footer class="page-footer">
+      <small>Famous Saying Generator v1.0</small>
+    </footer>
+
+    <script src="scripts/app.js"></script>
+  </body>
+</html>
